@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuizMaster - Register</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    /* Enhanced Alert Styles */
+    .alert {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 15px 25px;
+      border-radius: 5px;
+      color: white;
+      z-index: 1000;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease-out;
+      max-width: 90%;
+      text-align: center;
+    }
+    .alert-error { background-color: #e74c3c; }
+    .alert-success { background-color: #2ecc71; }
+    @keyframes slideIn {
+      from { top: -100px; opacity: 0; }
+      to { top: 20px; opacity: 1; }
+    }
+    
+    /* Loading state */
+    .btn-loading {
+      position: relative;
+      pointer-events: none;
+    }
+    .btn-loading::after {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      border: 3px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="register-page">
+  <!-- Your existing header content -->
+
+  <main class="register-main">
+    <div class="register-container">
+      <div class="register-header">
+        <h1 class="register-title">Create Your Account</h1>
+        <p class="register-subtitle">Join our quiz community today</p>
+      </div>
+
+      <form class="register-form" id="registrationForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Choose a username" required 
+                 minlength="3" maxlength="30" pattern="[a-zA-Z0-9_]+"
+                 title="Only letters, numbers and underscores">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Create a password" required
+                 minlength="6" pattern="^(?=.*[A-Za-z])(?=.*\d).{6,}$"
+                 title="At least 6 characters with 1 letter and 1 number">
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-password">Confirm Password</label>
+          <input type="password" id="confirm-password" 
+                 placeholder="Repeat your password" required>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          Register Now
+        </button>
+      </form>
+
+      <p class="login-link">
+        Already have an account? <a href="login.html">Login here</a>
+      </p>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const form = e.target;
+      const submitBtn = document.getElementById('submitBtn');
+      const originalBtnText = submitBtn.innerHTML;
+      
+      // Set loading state
+      submitBtn.disabled = true;
+      submitBtn.classList.add('btn-loading');
+      submitBtn.innerHTML = 'Creating Account...';
+      
+      try {
+        // Get form data
+        const formData = {
+          username: form.username.value.trim(),
+          email: form.email.value.trim(),
+          password: form.password.value
+        };
+        
+        // Client-side validation
+        if (form.password.value !== form['confirm-password'].value) {
+          throw new Error("Passwords don't match!");
+        }
+        
+        // Password complexity check
+        if (!/(?=.*[A-Za-z])(?=.*\d).{6,}/.test(form.password.value)) {
+          throw new Error("Password must contain at least 1 letter and 1 number");
+        }
+        
+        // Send registration request
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Registration failed. Please try again.');
+        }
+        
+        // On success
+        showAlert('success', 'Registration successful! Redirecting...');
+        
+        // Store token and user data
+        localStorage.setItem('quizToken', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Redirect after short delay
+        setTimeout(() => {
+          window.location.href = 'quiz.html';
+        }, 1500);
+        
+      } catch (error) {
+        showAlert('error', error.message);
+        console.error('Registration error:', error);
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('btn-loading');
+        submitBtn.innerHTML = originalBtnText;
+      }
+    });
+
+    // Enhanced alert function
+    function showAlert(type, message) {
+      // Remove existing alerts
+      const oldAlert = document.querySelector('.alert');
+      if (oldAlert) oldAlert.remove();
+      
+      const alertBox = document.createElement('div');
+      alertBox.className = `alert alert-${type}`;
+      alertBox.innerHTML = `
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" style="
+          background: none;
+          border: none;
+          color: white;
+          margin-left: 15px;
+          cursor: pointer;
+        ">×</button>
+      `;
+      
+      document.body.appendChild(alertBox);
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        alertBox.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => alertBox.remove(), 300);
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

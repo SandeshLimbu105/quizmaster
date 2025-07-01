@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QuizMaster - Login</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body class="login-page">
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">QuizMaster</a>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="quiz.html">Quizzes</a></li>
+          <li><a href="leaderboard.html">Leaderboard</a></li>
+          <li><a href="answers.html">My Answers</a></li>
+        </ul>
+      </nav>
+      <div class="auth-buttons">
+        <a href="login.html" class="btn btn-login">Login</a>
+        <a href="register.html" class="btn btn-register">Register</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="login-main">
+    <div class="login-container">
+      <div class="register-form">
+        <div class="login-header">
+          <h2 class="login-title">Login</h2>
+          <p class="login-subtitle">Access your account</p>
+        </div>
+
+        <!-- ✅ Updated Form: -->
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password" required />
+          </div>
+          <button type="submit" class="submit-btn">Login</button>
+          <div id="loginError" style="color: red; margin-top: 10px;"></div>
+          <div class="login-link">
+            Don't have an account? <a href="register.html">Register</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorDisplay = document.getElementById('loginError');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorDisplay.textContent = '';
+
+      const email = form.email.value.trim();
+      const password = form.password.value;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.token) {
+          // ✅ Store token and redirect
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('username', data.username);
+          window.location.href = '/quiz.html';
+        } else {
+          errorDisplay.textContent = data.message || 'Invalid email or password.';
+        }
+      } catch (err) {
+        console.error('Login error:', err);
+        errorDisplay.textContent = 'Server error. Please try again later.';
+      }
+    });
+  </script>
+</body>
+</html>

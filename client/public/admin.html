@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Add Quiz Question</title>
+</head>
+<body>
+  <h2>Add a New Quiz Question</h2>
+  <form id="questionForm">
+    <input type="text" placeholder="Question Text" name="questionText" required><br>
+    <input type="text" placeholder="Option 1" name="option1" required><br>
+    <input type="text" placeholder="Option 2" name="option2" required><br>
+    <input type="text" placeholder="Option 3" name="option3" required><br>
+    <input type="text" placeholder="Option 4 (optional)" name="option4"><br>
+    <input type="number" placeholder="Correct Option Index (0-3)" name="correctAnswer" required><br>
+    <input type="text" placeholder="Category" name="category"><br>
+    <button type="submit">Add Question</button>
+  </form>
+
+  <script>
+    document.getElementById('questionForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const options = [form.option1.value, form.option2.value, form.option3.value];
+      if (form.option4.value) options.push(form.option4.value);
+
+      const data = {
+        questionText: form.questionText.value,
+        options,
+        correctAnswer: parseInt(form.correctAnswer.value),
+        category: form.category.value
+      };
+
+      const res = await fetch('/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      alert(result.message || 'Something went wrong');
+      if (result.success) form.reset();
+    });
+  </script>
+</body>
+</html>
