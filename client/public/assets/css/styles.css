@@ -224,6 +224,7 @@ body.login-page {
 
 /* ===== HOMEPAGE STYLES ===== */
 .home-main {
+  background-color: #cd7f32;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -261,6 +262,7 @@ body.login-page {
 }
 
 .hero-content {
+  background-color: rgb(14, 131, 100);
   flex: 0 0 55%;
   padding: 3rem;
   display: flex;
@@ -275,7 +277,7 @@ body.login-page {
 }
 
 .hero-content p {
-  color: #6c757d;
+  color: #0f151a;
   margin-bottom: 2rem;
   line-height: 1.6;
 }
